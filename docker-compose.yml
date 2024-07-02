@@ -31,6 +31,18 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+  # Nginx Service
+  webserver:
+    image: nginx:alpine
+    container_name: ordering-gateway
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - ./proxy/conf.d/:/etc/nginx/conf.d/
+    ports:
+      - "8080:80"
+    networks:
+      - feast-network
   rabbitmq:
     image: rabbitmq
     ports:

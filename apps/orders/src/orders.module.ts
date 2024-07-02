@@ -8,6 +8,7 @@ import { DatabaseModule } from '@app/common/database/database.module';
 import { Order, OrderSchame } from './schemas/order.schema';
 import { RmqModule } from '@app/common';
 import { BILLING_SERVICE } from './constants/services';
+import { OrdersRepository } from './orders.repository';
 
 @Module({
   imports: [
@@ -24,6 +25,6 @@ import { BILLING_SERVICE } from './constants/services';
     RmqModule.register({name: BILLING_SERVICE})
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, OrdersRepository],
 })
 export class OrdersModule {}
