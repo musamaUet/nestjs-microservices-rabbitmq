@@ -5,6 +5,9 @@ import * as Joi from 'joi';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { DatabaseModule } from '@app/common/database/database.module';
+import { Order, OrderSchame } from './schemas/order.schema';
+import { RmqModule } from '@app/common';
+import { BILLING_SERVICE } from './constants/services';
 
 @Module({
   imports: [
@@ -17,7 +20,8 @@ import { DatabaseModule } from '@app/common/database/database.module';
       envFilePath: './apps/orders/.env'
     }),
     DatabaseModule,
-    // MongooseModule.forFeature([{name: OrdersController.name, schema: OrderSchema }])
+    MongooseModule.forFeature([{name: Order.name, schema: OrderSchame }]),
+    RmqModule.register({name: BILLING_SERVICE})
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
