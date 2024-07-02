@@ -1,4 +1,19 @@
 services:
+  rabbitmq:
+    container_name: ordering-rabbitmq
+    image: rabbitmq:3.12.3-management
+    hostname: rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - ordering-network
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 3s
   orders:
     build:
       context: .
@@ -11,6 +26,9 @@ services:
       - mongodb-primary
       - mongodb-secondary
       - mongodb-arbiter
+      - rabbitmq
+    networks:
+        - ordering-network
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -28,6 +46,9 @@ services:
       - mongodb-primary
       - mongodb-secondary
       - mongodb-arbiter
+      - rabbitmq
+    networks:
+        - ordering-network
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -42,11 +63,7 @@ services:
     ports:
       - "8080:80"
     networks:
-      - feast-network
-  rabbitmq:
-    image: rabbitmq
-    ports:
-      - '5672:5672'
+      - ordering-network
   mongodb-primary:
     image: docker.io/bitnami/mongodb:5.0
     environment:
@@ -58,7 +75,8 @@ services:
       - 'mongodb_master_data:/bitnami/mongodb'
     ports:
       - '27017:27017'
-
+    networks:
+      - ordering-network
   mongodb-secondary:
     image: docker.io/bitnami/mongodb:5.0
     depends_on:
@@ -69,7 +87,8 @@ services:
       - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
       - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
       - MONGODB_REPLICA_SET_KEY=replicasetkey123
-
+    networks:
+      - ordering-network
   mongodb-arbiter:
     image: docker.io/bitnami/mongodb:5.0
     depends_on:
@@ -80,7 +99,11 @@ services:
       - MONGODB_INITIAL_PRIMARY_HOST=mongodb-primary
       - MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD=password123
       - MONGODB_REPLICA_SET_KEY=replicasetkey123
-
+    networks:
+      - ordering-network
+networks:
+  ordering-network:
+    driver: bridge
 volumes:
   mongodb_master_data:
     driver: local
